@@ -306,3 +306,12 @@ int main(int ac, char **av)
 ```
 
 ## Ideas
+
+Client -> Server:
+
+1. Check argument (ac, av). If ac less than 3, terminate the process.
+2. Parse the string into binary, char by char.
+3. Send one bit at a time to the server using SIGUSR1 and SIGUSR2.
+4. Server receive the bits, once it receive total of 8 bits, meaning 1 byte, print the char.
+5. Once every character of the msg has been printed out, server side exit.
+6. Inform client that server has received the msg. (Acknowledgment system)
