@@ -6,7 +6,7 @@
 #    By: wricky-t <wricky-t@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/08/02 12:30:07 by wricky-t          #+#    #+#              #
-#    Updated: 2022/08/02 13:24:17 by wricky-t         ###   ########.fr        #
+#    Updated: 2022/08/02 15:42:24 by wricky-t         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,42 +16,53 @@ SRCS	:= server.c client.c
 
 OBJS	:= $(SRCS:.c=.o)
 
+HEAD	:= minitalk.h
+
+PRINTF	:= ./ft_printf
+
 CC		:= cc
 
 CFLAGS	?= -Wall -Werror -Wextra
 
 all: server client
-	@echo "  $(RD)╔══╦╦═╦╦╦══╦═╦╗╔╦╗$(DF)"
-	@echo "  $(RD)║║║║║║║║╠╗╔╣╩║╚╣═╣$(DF)"
-	@echo "  $(RD)╚╩╩╩╩╩═╩╝╚╝╚╩╩═╩╩╝$(DF)"
-	@echo "$(GR)===== $(UGR)HOW TO USE$(DF)$(GR) =====$(DF)"
-	@echo "$(WH)./server$(DF)"
-	@echo "$(WH)./client [pid] [msg]$(DF)"
-	@echo "$(GR)======================$(DF)"
+	@echo "    $(RD)╔══╦╦═╦╦╦══╦═╦╗╔╦╗$(DF)"
+	@echo "    $(RD)║║║║║║║║╠╗╔╣╩║╚╣═╣$(DF)"
+	@echo "    $(RD)╚╩╩╩╩╩═╩╝╚╝╚╩╩═╩╩╝$(DF)"
+	@echo "$(GR)======= $(UGR)HOW TO USE$(DF)$(GR) =======$(DF)"
+	@echo "$(WH)1. Launch server$(DF)."
+	@echo "$(GR)   ./server$(DF)"
+	@echo "$(WH)2. Launch client.$(DF)"
+	@echo "$(GR)   ./client [pid] [msg]$(DF)"
+	@echo "$(GR)==========================$(DF)"
 	
 
-server: server.o
-	@$(CC) $(CFLAGS) $< -o server
+server: server.o $(HEAD)
+	@$(CC) $(CFLAGS) $< -o server -L$(PRINTF) $(PRINTF)/*.a
 	@echo "$(GR)✓ server created$(DF)"
 
-client:	client.o
-	@$(CC) $(CFLAGS) $< -o client
+client:	client.o $(HEAD)
+	@$(CC) $(CFLAGS) $< -o client -L$(PRINTF) $(PRINTF)/*.a
 	@echo "$(GR)✓ client created$(DF)"
 
-%.o: %.c
+pflib:
+	@make all -C $(PRINTF)
+
+%.o: %.c pflib
 	@$(CC) $(CFLAGS) -c $< -o $@
-	@echo "$(WH)↺ compiling...$(DF)"
 
 clean:
 	@rm -rf $(OBJS)
+	@make clean -C $(PRINTF)
 	@echo "$(RD)✗ object files$(DF)"
 
 fclean: clean
 	@rm -f $(NAME)
+	@make fclean -C $(PRINTF)
 	@echo "$(RD)✗ server & client destroyed$(DF)"
 	
 
 re: fclean all
+	@make re -C $(PRINTF)
 
 .PHONY: clean fclean re
 
