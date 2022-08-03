@@ -5,73 +5,67 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: wricky-t <wricky-t@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/08/02 12:53:50 by wricky-t          #+#    #+#             */
-/*   Updated: 2022/08/02 21:20:44 by wricky-t         ###   ########.fr       */
+/*   Created: 2022/08/03 20:12:05 by wricky-t          #+#    #+#             */
+/*   Updated: 2022/08/03 21:19:45 by wricky-t         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-/**
- * Action to be performed when received sigusr1 signal
-**/
-void	handle_sigusr1(int sig)
+static void handle_server(int sig, siginfo_t *info, void *ucontext)
 {
-	sig = 1;
-	ft_printf("1");
+	// server status, 1 == active, 0 == offline
+	// default is 0
+	static int	status = 0;
+	// store the binary value
+	static int	binary = 0;
+	// to keep track how many bit we receive
+	static int	bit = 0;
+	pid_t		client_pid;
+	// commonly, handler function doesn't make any use of the third parameter
+	// so typecast it to void
+	(void)ucontext;
+	// who send this signal?
+	client_pid = info->si_pid;
+	// check if server is ready to receive data
+	if (sig == SIGUSR1 && status == 0)
+	{
+		// set server status to active
+		status = 1;
+		// ayoooo, i'm ready send me a bit please
+		kill(client_pid, SIGUSR2);
+	}
+	else
+	{
+		// because the binary value server received is in reverse order
+		// so this method can reverse back
+		binary *= 10;
+		// when the server is active, receive bit
+		if (sig == SIGUSR1)
+		{
+			binary += 1;
+			ft_printf("server is active, I received 1\n");
+		}
+		bit++;
+		// here is if signal is SIGUSR2
+		ft_printf("Server is active. I received 0\n");
+		ft_printf("binary value: %d, bit: %d\n", binary, bit);
+	}
 }
 
-/**
- * Action to be performed when received sigusr2 signal
-**/
-void	handle_sigusr2(int sig)
-{
-	sig = 0;
-	ft_printf("0");
-}
-
-/**
- * Hook the user-defined action to the signal
- * sig	: signal
- * sa	: struct for sigaction
- * act	: function pointer that points to the handler function
- * 
- * 1. sigemptyset to empty the sa_mask so no signal will be blocked
- * 2. set sa_handler to act, so that when received sig, perform what has been
- * 	  defined in act
- * 3. set SA_RESTART to sa_flags so that when signal blocked by slow system
- *    call, let signal do what it suppose to do first then invoke the
- *    syscall again.
-**/
-static void	hook_signal(int sig, struct sigaction *sa, void (*act)(int sig))
-{
-	sigemptyset(&sa->sa_mask);
-	sa->sa_handler = act;
-	sa->sa_flags = SA_RESTART;
-	sigaction(sig, sa, NULL);
-}
-
-/**
- * server
- * 
- * sa : sigaction struct
- * pid: server pid
- * 
- * 1. get PID and print it out
- * 2. hook user defined action to SIGUSR1 & SIGUSR2
- * 3. the while loop is to wait for any signal
-**/
+// new server.c
 int	main(void)
 {
-	pid_t				pid;
-	struct sigaction	sa_usr1;
-	struct sigaction	sa_usr2;
-
-	pid = getpid();
-	ft_printf("Server PID: %d\n", pid);
-	hook_signal(SIGUSR1, &sa_usr1, &handle_sigusr1);
-	hook_signal(SIGUSR2, &sa_usr2, &handle_sigusr2);
+	struct sigaction	sa;
+	// get server pid and print it out
+	ft_printf("Server PID: %d\n", getpid());
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = handle_server;
+	// hook sa to SIGUSR1 & SIGUSR2
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
+	// wait for client's signal
+	// 1. client send signal to check if server is ready
 	while (1)
-		pause();
-	return (0);
+		pause();	
 }
