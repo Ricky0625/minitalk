@@ -6,7 +6,7 @@
 /*   By: wricky-t <wricky-t@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 14:19:19 by wricky-t          #+#    #+#             */
-/*   Updated: 2022/07/30 19:33:59 by wricky-t         ###   ########.fr       */
+/*   Updated: 2022/08/04 14:24:26 by wricky-t         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,5 +82,5 @@ int		print_unsigned(unsigned int n, t_format *spec);
 int		print_num(int n, t_format *spec);
 
 // testing helper
-void	print_tformat(t_format *spec);
+// void	print_tformat(t_format *spec);
 #endif
