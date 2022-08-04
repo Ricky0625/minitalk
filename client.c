@@ -6,7 +6,7 @@
 /*   By: wricky-t <wricky-t@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 20:12:07 by wricky-t          #+#    #+#             */
-/*   Updated: 2022/08/04 12:23:27 by wricky-t         ###   ########.fr       */
+/*   Updated: 2022/08/04 17:56:15 by wricky-t         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 char	*g_msg;
 
-static void send_sig(pid_t server_pid, int char_dec)
+static void	send_sig(pid_t server_pid, int char_dec)
 {
 	static int	mask = 128;
 	static int	bit = 0;
@@ -30,7 +30,7 @@ static void send_sig(pid_t server_pid, int char_dec)
 		kill(server_pid, SIGUSR2);
 	mask >>= 1;
 	bit++;
-	usleep(10);
+	usleep(15);
 }
 
 static void	handle_client(int sig, siginfo_t *info, void *ucontext)
@@ -39,12 +39,13 @@ static void	handle_client(int sig, siginfo_t *info, void *ucontext)
 	char			char_dec;
 	static int		ith = 0;
 	static int		bit = 0;
+
 	(void)ucontext;
 	if (info->si_pid != 0)
 		server_pid = info->si_pid;
 	if (sig == SIGUSR1)
 	{
-		ft_printf("Message received! \n");
+		ft_printf("Message received!\n");
 		exit(EXIT_SUCCESS);
 	}
 	else
@@ -67,7 +68,8 @@ int	main(int ac, char **av)
 
 	if (ac != 3)
 	{
-		ft_printf("Invalid usage!\n");
+		ft_printf("[ERROR]: Invalid usage!\n");
+		ft_printf("[USAGE]: ./client [pid] [msg]\n");
 		exit(EXIT_FAILURE);
 	}
 	server_id = ft_atoi(av[1]);

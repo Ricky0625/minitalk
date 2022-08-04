@@ -6,7 +6,7 @@
 /*   By: wricky-t <wricky-t@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 20:12:05 by wricky-t          #+#    #+#             */
-/*   Updated: 2022/08/04 12:23:16 by wricky-t         ###   ########.fr       */
+/*   Updated: 2022/08/04 18:19:06 by wricky-t         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,21 +31,20 @@ static int	bin_to_dec(int binary)
 	return (chardec);
 }
 
-static void handle_server(int sig, siginfo_t *info, void *ucontext)
+static void	handle_server(int sig, siginfo_t *info, void *ucontext)
 {
 	static pid_t	client_pid;
 	static int		status = 0;
 	static int		binary = 0;
 	static int		bit = 0;
+	int				char_dec;
 
 	(void)ucontext;
-	if (info->si_pid != 0 && client_pid != info->si_pid)
+	char_dec = 0;
+	if (info->si_pid != 0)
 		client_pid = info->si_pid;
 	if (sig == SIGUSR1 && status == 0)
-	{
 		status = 1;
-		kill(client_pid, SIGUSR2);
-	}
 	else
 	{
 		binary *= 10;
@@ -54,28 +53,30 @@ static void handle_server(int sig, siginfo_t *info, void *ucontext)
 		bit++;
 		if (bit == 8)
 		{
-			if (bin_to_dec(binary) == 0)
+			char_dec = bin_to_dec(binary);
+			if (char_dec == 0)
 			{
-				ft_printf("\n");
+				write(1, "\n", 1);
 				status = 0;
 				kill(client_pid, SIGUSR1);
 			}
-			ft_printf("%c", bin_to_dec(binary));
+			write(1, &char_dec, 1);
 			bit = 0;
 			binary = 0;
 		}
-		kill(client_pid, SIGUSR2);
 	}
+	kill(client_pid, SIGUSR2);
 }
 
 int	main(void)
 {
 	struct sigaction	sa;
+
 	ft_printf("Server PID: %d\n", getpid());
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = handle_server;
 	sigaction(SIGUSR1, &sa, NULL);
 	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
-		pause();	
+		pause();
 }
